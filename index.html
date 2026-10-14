@@ -1,0 +1,1175 @@
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitCybe Sensing Neural Studio (2000px Scroll Immersion)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        cyber: {
+                            900: '#030712',
+                            800: '#0b0f19',
+                            700: '#111827',
+                            600: '#1f2937',
+                            500: '#374151',
+                            green: '#00ff66',
+                            cyan: '#00f0ff',
+                            purple: '#9d4edd',
+                            pink: '#ff007f',
+                            yellow: '#f39c12'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 2800px; /* Enforcing 2600px+ vertical immersion */
+        }
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .scanlines {
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.03),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.03)
+            );
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+        @keyframes glitch-anim {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+        .glitch-hover:hover {
+            animation: glitch-anim 0.2s cubic-bezier(.25, .46, .45, .94) both;
+        }
+        .cyber-border {
+            position: relative;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(12px);
+        }
+        .cyber-border::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 8px; height: 8px;
+            border-top: 2px solid #00f0ff;
+            border-left: 2px solid #00f0ff;
+        }
+        .cyber-border::after {
+            content: '';
+            position: absolute;
+            bottom: 0; right: 0; width: 8px; height: 8px;
+            border-bottom: 2px solid #00f0ff;
+            border-right: 2px solid #00f0ff;
+        }
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+        }
+        .glow-green {
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.25);
+        }
+        .glow-pink {
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.25);
+        }
+        /* Custom Scrollbar for 200px Bottom Panel */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030712;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f0ff;
+        }
+    </style>
+</head>
+<body class="relative selection:bg-cyber-cyan selection:text-black">
+
+    <div class="scanlines fixed inset-0 z-50 pointer-events-none opacity-40"></div>
+    
+    <!-- 2000px Vertical Scroll Progress Indicator Bar -->
+    <div id="scroll-progress-bar" class="fixed top-0 left-0 h-1 bg-gradient-to-r from-cyber-cyan via-cyber-green to-cyber-pink z-50 transition-all duration-100" style="width: 0%;"></div>
+
+    <header class="border-b border-gray-800 bg-cyber-800/90 backdrop-blur-md sticky top-0 z-40 px-4 lg:px-8 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="relative w-10 h-10 rounded bg-gradient-to-br from-cyber-cyan to-cyber-green p-0.5 flex items-center justify-center glow-cyan">
+                <div class="w-full h-full bg-cyber-900 rounded flex items-center justify-center">
+                    <i class="fa-solid fa-cube text-cyber-cyan animate-pulse"></i>
+                </div>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-wider text-white flex items-center gap-2">
+                    GITCYBER <span class="text-xs px-2 py-0.5 rounded bg-cyber-cyan/10 text-cyber-cyan border border-cyber-cyan/30">AR v4.2 // 2000px</span>
+                </h1>
+                <p class="text-xs text-gray-400 code-font">Motion Design & Sensing Applied Learning Platform</p>
+            </div>
+        </div>
+
+        <nav class="hidden md:flex items-center space-x-1 bg-cyber-900 p-1 rounded-lg border border-gray-800">
+            <button onclick="switchTab('ar')" id="tab-ar" class="px-4 py-1.5 rounded text-xs font-semibold code-font transition-all bg-cyber-cyan text-black shadow-lg shadow-cyber-cyan/20">
+                <i class="fa-solid fa-vr-cardboard mr-1.5"></i> GitHub AR Space
+            </button>
+            <button onclick="switchTab('cards')" id="tab-cards" class="px-4 py-1.5 rounded text-xs font-semibold code-font transition-all text-gray-400 hover:text-white">
+                <i class="fa-solid fa-id-card mr-1.5"></i> Dev Flip GUI & Glitches
+            </button>
+            <button onclick="switchTab('ml')" id="tab-ml" class="px-4 py-1.5 rounded text-xs font-semibold code-font transition-all text-gray-400 hover:text-white">
+                <i class="fa-solid fa-brain mr-1.5"></i> Motion Sensing & ML
+            </button>
+        </nav>
+
+        <div class="flex items-center space-x-2">
+            <button onclick="toggleDeviceSimulator()" id="device-sim-btn" class="px-3 py-1.5 rounded bg-cyber-cyan/20 border border-cyber-cyan/40 text-cyber-cyan text-xs font-semibold code-font hover:bg-cyber-cyan/30 transition-all flex items-center gap-1.5">
+                <i class="fa-solid fa-mobile-screen"></i> <span id="sim-btn-text">Device Frame View</span>
+            </button>
+            <button onclick="triggerGlobalGlitch()" class="hidden sm:flex px-3 py-1.5 rounded bg-cyber-pink/20 border border-cyber-pink/50 text-cyber-pink text-xs font-semibold code-font hover:bg-cyber-pink/30 transition-all items-center gap-1">
+                <i class="fa-solid fa-bolt"></i> GLITCH INJECT
+            </button>
+        </div>
+    </header>
+
+    <div class="md:hidden flex border-b border-gray-800 bg-cyber-800 p-2 justify-around text-xs code-font z-30">
+        <button onclick="switchTab('ar')" id="mob-tab-ar" class="py-1 px-3 rounded bg-cyber-cyan text-black font-bold">AR Space</button>
+        <button onclick="switchTab('cards')" id="mob-tab-cards" class="py-1 px-3 rounded text-gray-400">Dev Cards</button>
+        <button onclick="switchTab('ml')" id="mob-tab-ml" class="py-1 px-3 rounded text-gray-400">Motion ML</button>
+    </div>
+
+    <div id="device-frame-wrapper" class="w-full flex-1 flex flex-col transition-all duration-500">
+        <main class="flex-1 flex flex-col p-4 lg:p-6 max-w-7xl mx-auto w-full pb-56 space-y-12">
+
+            <!-- ==================== VIEW 1: GITHUB AR SPACE (THREE.JS + STICK-OUT PINS) ==================== -->
+            <section id="view-ar" class="flex-1 flex flex-col space-y-4">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                    <!-- AR Control Panel -->
+                    <div class="lg:col-span-1 cyber-border p-4 rounded-xl flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h2 class="text-sm font-bold code-font text-cyber-cyan flex items-center gap-2">
+                                    <i class="fa-solid fa-satellite-dish"></i> AR REPO RADAR
+                                </h2>
+                                <span class="text-[10px] bg-cyber-green/10 text-cyber-green px-2 py-0.5 rounded border border-cyber-green/30">ONLINE</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mb-4">Immersive 3D node graph visualizing GitHub repositories with stick-out anchor pins and commit constellations.</p>
+                            
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="text-xs code-font text-gray-300 block mb-1">Target Repository</label>
+                                    <select id="ar-repo-select" onchange="updateARConstellation()" class="w-full bg-cyber-900 border border-gray-700 rounded px-3 py-2 text-xs code-font text-white focus:outline-none focus:border-cyber-cyan">
+                                        <option value="tensorflow/tensorflow">tensorflow / tensorflow</option>
+                                        <option value="facebook/react">facebook / react</option>
+                                        <option value="torvalds/linux">torvalds / linux</option>
+                                        <option value="openai/gym">openai / gym</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="text-xs code-font text-gray-300 block mb-1">Stick-Out Pins Mode</label>
+                                    <button onclick="toggleStickOutPins()" id="stickout-pins-btn" class="w-full py-2 px-3 rounded bg-cyber-cyan/20 border border-cyber-cyan text-cyber-cyan text-xs font-semibold code-font hover:bg-cyber-cyan/30 transition-all flex items-center justify-center gap-1.5">
+                                        <i class="fa-solid fa-thumbtack"></i> Toggle Anchor Beacons
+                                    </button>
+                                </div>
+
+                                <div>
+                                    <label class="text-xs code-font text-gray-300 block mb-1">Constellation Density</label>
+                                    <input type="range" id="ar-density" min="20" max="150" value="70" oninput="updateDensity(this.value)" class="w-full accent-cyber-cyan">
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2 pt-2">
+                                    <button onclick="toggleARotation()" class="py-2 px-3 rounded bg-cyber-700 hover:bg-cyber-600 text-xs code-font font-semibold text-white border border-gray-600 transition-all flex items-center justify-center gap-1.5">
+                                        <i class="fa-solid fa-rotate"></i> Spin HUD
+                                    </button>
+                                    <button onclick="resetARCamera()" class="py-2 px-3 rounded bg-cyber-700 hover:bg-cyber-600 text-xs code-font font-semibold text-white border border-gray-600 transition-all flex items-center justify-center gap-1.5">
+                                        <i class="fa-solid fa-crosshairs"></i> Recenter
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Telemetry Data Box -->
+                        <div class="bg-cyber-900/90 rounded-lg p-3 border border-gray-800 code-font text-[11px] space-y-1.5">
+                            <div class="text-cyber-cyan font-bold flex justify-between">
+                                <span>// TELEMETRY</span>
+                                <span id="telemetry-fps">60 FPS</span>
+                            </div>
+                            <div class="text-gray-400 flex justify-between">
+                                <span>Nodes Tracked:</span>
+                                <span id="telemetry-nodes" class="text-white">70</span>
+                            </div>
+                            <div class="text-gray-400 flex justify-between">
+                                <span>Active Stick-Out Pins:</span>
+                                <span id="telemetry-pins" class="text-cyber-green">5 Anchored</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Three.js AR Canvas Container with Stick Out Pin Overlays -->
+                    <div class="lg:col-span-3 cyber-border rounded-xl relative overflow-hidden min-h-[450px] lg:min-h-[580px] flex items-center justify-center">
+                        <div id="ar-canvas-container" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"></div>
+                        
+                        <!-- Stick-Out Floating Pin Card Tooltips (DOM Overlays anchored to 3D positions) -->
+                        <div id="stick-out-tooltip" class="absolute top-16 right-6 bg-cyber-900/90 backdrop-blur-md p-4 rounded-xl border border-cyber-cyan shadow-2xl max-w-xs transition-all duration-300 opacity-90 pointer-events-auto">
+                            <div class="flex items-center justify-between mb-2 pb-2 border-b border-gray-800">
+                                <span class="text-xs code-font text-cyber-cyan font-bold flex items-center gap-1.5">
+                                    <i class="fa-solid fa-thumbtack text-cyber-pink animate-bounce"></i> ANCHOR PIN #01
+                                </span>
+                                <span class="text-[10px] bg-cyber-green/20 text-cyber-green px-1.5 py-0.5 rounded">STABLE</span>
+                            </div>
+                            <p class="text-[11px] code-font text-gray-300 mb-2">Commit #48f90a: Refactored WebGL buffer allocation for zero-latency shader pipelines.</p>
+                            <div class="flex justify-between items-center text-[10px] code-font text-gray-400">
+                                <span>Author: @alexvex</span>
+                                <span class="text-cyber-yellow">PR #1024</span>
+                            </div>
+                        </div>
+
+                        <!-- HUD Overlay Elements -->
+                        <div class="absolute top-4 left-4 pointer-events-none flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full bg-cyber-cyan animate-ping"></div>
+                            <span class="text-xs code-font text-cyber-cyan bg-black/60 px-2 py-1 rounded border border-cyber-cyan/30">AR_VIEWPORT // STICK_OUT_PINS_ACTIVE</span>
+                        </div>
+
+                        <div class="absolute bottom-4 left-4 right-4 pointer-events-none flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2">
+                            <div class="bg-black/80 backdrop-blur-md p-3 rounded-lg border border-gray-800 text-xs code-font max-w-sm">
+                                <span class="text-cyber-green font-bold block mb-1">&gt; SELECTED_NODE_INFO</span>
+                                <p id="ar-node-info" class="text-gray-300">Click any floating repo node or stick-out pin in the 3D space to inspect commits and contributor telemetry.</p>
+                            </div>
+                            <div class="bg-black/80 backdrop-blur-md px-3 py-2 rounded-lg border border-gray-800 text-xs code-font text-cyber-cyan">
+                                [DRAG TO ORBIT] [SCROLL TO ZOOM]
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== STREAMING_CHUNK:Building View 2: GitHub Dev Flip Cards & Glitch GUI ==================== -->
+            <section id="view-cards" class="hidden flex-1 flex flex-col space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold code-font text-cyber-cyan flex items-center gap-2">
+                            <i class="fa-solid fa-id-card"></i> GITHUB DEVELOPER FLIP GUI & MOTION GLITCHES
+                        </h2>
+                        <p class="text-xs text-gray-400">Hover or click developer cards to trigger interactive 3D flips, motion design glitches, and telemetry inspects.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="flipAllCards()" class="px-3 py-1.5 rounded bg-cyber-700 hover:bg-cyber-600 text-xs code-font text-white border border-gray-600 transition-all">
+                            <i class="fa-solid fa-shuffle mr-1"></i> Flip All Cards
+                        </button>
+                        <button onclick="randomizeCardGlitches()" class="px-3 py-1.5 rounded bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/50 text-xs code-font hover:bg-cyber-cyan/30 transition-all">
+                            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Glitch Wave
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="dev-card-grid">
+                    <!-- Card 1 -->
+                    <div class="perspective-1000 h-96 cursor-pointer" onclick="toggleCardFlip(this)">
+                        <div class="transform-style-3d relative w-full h-full rounded-xl shadow-2xl">
+                            <!-- FRONT -->
+                            <div class="backface-hidden absolute inset-0 cyber-border rounded-xl p-6 flex flex-col justify-between overflow-hidden group glitch-hover">
+                                <div class="absolute -right-10 -top-10 w-32 h-32 bg-cyber-cyan/10 rounded-full blur-2xl group-hover:bg-cyber-cyan/20 transition-all"></div>
+                                <div>
+                                    <div class="flex justify-between items-start mb-4">
+                                        <img src="https://placehold.co/80x80/111827/00f0ff?text=DEV" alt="Avatar" class="w-16 h-16 rounded-xl border border-cyber-cyan/50 object-cover" onerror="this.src='https://placehold.co/80x80/111827/00f0ff?text=DEV'">
+                                        <span class="text-[10px] px-2 py-1 rounded bg-cyber-green/10 text-cyber-green border border-cyber-green/30 code-font">SENIOR ARCHITECT</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-white code-font group-hover:text-cyber-cyan transition-colors">Alex "Glitch" Vex</h3>
+                                    <p class="text-xs text-gray-400 mb-4">@alexvex // Core Systems & Motion Design</p>
+                                    <div class="space-y-2 text-xs code-font text-gray-300 bg-cyber-900/80 p-3 rounded-lg border border-gray-800">
+                                        <div class="flex justify-between"><span>Commits (2026):</span> <span class="text-cyber-green font-bold">1,842</span></div>
+                                        <div class="flex justify-between"><span>Pull Requests:</span> <span class="text-cyber-cyan font-bold">342</span></div>
+                                        <div class="flex justify-between"><span>Neural Streak:</span> <span class="text-cyber-yellow font-bold">128 Days</span></div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between text-xs code-font text-gray-400 pt-3 border-t border-gray-800">
+                                    <span>[CLICK TO FLIP GUI]</span>
+                                    <i class="fa-solid fa-arrow-rotate-right text-cyber-cyan"></i>
+                                </div>
+                            </div>
+                            <!-- BACK -->
+                            <div class="backface-hidden absolute inset-0 rotate-y-180 cyber-border rounded-xl p-6 flex flex-col justify-between bg-cyber-900 border-cyber-cyan">
+                                <div>
+                                    <div class="flex justify-between items-center mb-3">
+                                        <span class="text-xs code-font text-cyber-cyan font-bold">&gt; KERNEL_CONFIG &amp; SKILLS</span>
+                                        <i class="fa-solid fa-microchip text-cyber-cyan"></i>
+                                    </div>
+                                    <div class="space-y-2 text-xs code-font text-gray-300">
+                                        <p class="text-[11px] text-gray-400">Specializing in WebGL shaders, reactive motion frameworks, and autonomous sensing feedback loops.</p>
+                                        <div class="flex flex-wrap gap-1.5 pt-2">
+                                            <span class="px-2 py-0.5 bg-cyber-800 text-cyber-cyan rounded text-[10px] border border-gray-700">TypeScript</span>
+                                            <span class="px-2 py-0.5 bg-cyber-800 text-cyber-green rounded text-[10px] border border-gray-700">Three.js</span>
+                                            <span class="px-2 py-0.5 bg-cyber-800 text-cyber-pink rounded text-[10px] border border-gray-700">Rust</span>
+                                            <span class="px-2 py-0.5 bg-cyber-800 text-cyber-yellow rounded text-[10px] border border-gray-700">CUDA</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-black/60 p-3 rounded border border-gray-800 text-[11px] code-font text-cyber-green">
+                                    status: "Compiling neural shaders with zero latency."
+                                </div>
+                                <div class="flex items-center justify-between text-xs code-font text-gray-400 pt-2 border-t border-gray-800">
+                                    <span>[FLIP TO FRONT]</span>
+                                    <i class="fa-solid fa-arrow-rotate-left text-cyber-cyan"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="perspective-1000 h-96 cursor-pointer" onclick="toggleCardFlip(this)">
+                        <div class="transform-style-3d relative w-full h-full rounded-xl shadow-2xl">
+                            <!-- FRONT -->
+                            <div class="backface-hidden absolute inset-0 cyber-border rounded-xl p-6 flex flex-col justify-between overflow-hidden group glitch-hover">
+                                <div class="absolute -right-10 -top-10 w-32 h-32 bg-cyber-green/10 rounded-full blur-2xl group-hover:bg-cyber-green/20 transition-all"></div>
+                                <div>
+                                    <div class="flex justify-between items-start mb-4">
+                                        <img src="https://placehold.co/80x80/111827/00ff66?text=ML" alt="Avatar" class="w-16 h-16 rounded-xl border border-cyber-green/50 object-cover" onerror="this.src='https://placehold.co/80x80/111827/00ff66?text=ML'">
+                                        <span class="text-[10px] px-2 py-1 rounded bg-cyber-cyan/10 text-cyber-cyan border border-cyber-cyan/30 code-font">ML RESEARCHER</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-white code-font group-hover:text-cyber-green transition-colors">Dr. Sarah Kael</h3>
+                                    <p class="text-xs text-gray-400 mb-4">@skael // Applied Sensing & CNNs</p>
+                                    <div class="space-y-2 text-xs code-font text-gray-300 bg-cyber-900/80 p-3 rounded-lg border border-gray-800">
+                                        <div class="flex justify-between"><span>Commits (2026):</span> <span class="text-cyber-green font-bold">2,109</span></div>
+                                        <div class="flex justify-between"><span>Pull Requests:</span> <span class="text-cyber-cyan font-bold">412</span></div>
+                                        <div class="flex justify-between"><span>Neural Streak:</span> <span class="text-cyber-yellow font-bold">210 Days</span></div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between text-xs code-font text-gray-400 pt-3 border-t border-gray-800">
+                                    <span>[CLICK TO FLIP GUI]</span>
+                                    <i class="fa-solid fa-arrow-rotate-right text-cyber-green"></i>
+                                </div>
+                            </div>
+                            <!-- BACK -->
+                            <div class="backface-hidden absolute inset-0 rotate-y-180 cyber-border rounded-xl p-6 flex flex-col justify-between bg-cyber-900 border-cyber-green">
+                                <div>
+                                    <div class="flex justify-between items-center mb-3">
+                                        <span class="text-xs code-font text-cyber-green font-bold">&gt; KERNEL_CONFIG &amp; SKILLS</span>
+                                        <i class="fa-solid fa-brain text-cyber-green"></i>
+                                    </div>
+                                    <div class="space-y-2 text-xs code-font text-gray-300">
+                                        <p class="text-[11px] text-gray-400">Pioneering edge-device motion sensing algorithms and real-time gesture classification architectures.</p>
+                                        <div class="flex flex-wrap gap-1.5 pt-2">
+                                            <span class="px-2 py-0.5 bg-cyber-800 text-cyber-cyan rounded text-[10px] border border-gray-700">Python</span>
+                                            <span class="px-2 py-0.5 bg-cyber-800 text-cyber-green rounded text-[10px] border border-gray-700">PyTorch</span>
+                                            <span class="px-2 py-0.5 bg-cyber-800 text-cyber-pink rounded text-[10px] border border-gray-700">TensorFlow.js</span>
+                                            <span class="px-2 py-0.5 bg-cyber-800 text-cyber-yellow rounded text-[10px] border border-gray-700">OpenCV</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-black/60 p-3 rounded border border-gray-800 text-[11px] code-font text-cyber-cyan">
+                                    status: "Optimizing transformer attention weights."
+                                </div>
+                                <div class="flex items-center justify-between text-xs code-font text-gray-400 pt-2 border-t border-gray-800">
+                                    <span>[FLIP TO FRONT]</span>
+                                    <i class="fa-solid fa-arrow-rotate-left text-cyber-green"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="perspective-1000 h-96 cursor-pointer" onclick="toggleCardFlip(this)">
+                        <div class="transform-style-3d relative w-full h-full rounded-xl shadow-2xl">
+                            <!-- FRONT -->
+                            <div class="backface-hidden absolute inset-0 cyber-border rounded-xl p-6 flex flex-col justify-between overflow-hidden group glitch-hover">
+                                <div class="absolute -right-10 -top-10 w-32 h-32 bg-cyber-pink/10 rounded-full blur-2xl group-hover:bg-cyber-pink/20 transition-all"></div>
+                                <div>
+                                    <div class="flex justify-between items-start mb-4">
+                                        <img src="https://placehold.co/80x80/111827/ff007f?text=UI" alt="Avatar" class="w-16 h-16 rounded-xl border border-cyber-pink/50 object-cover" onerror="this.src='https://placehold.co/80x80/111827/ff007f?text=UI'">
+                                        <span class="text-[10px] px-2 py-1 rounded bg-cyber-pink/10 text-cyber-pink border border-cyber-pink/30 code-font">UI MOTION LEAD</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-white code-font group-hover:text-cyber-pink transition-colors">Marcus Zane</h3>
+                                    <p class="text-xs text-gray-400 mb-4">@mzane // Cyber-UX & Micro-interactions</p>
+                                    <div class="space-y-2 text-xs code-font text-gray-300 bg-cyber-900/80 p-3 rounded-lg border border-gray-800">
+                                        <div class="flex justify-between"><span>Commits (2026):</span> <span class="text-cyber-green font-bold">1,490</span></div>
+                                        <div class="flex justify-between"><span>Pull Requests:</span> <span class="text-cyber-cyan font-bold">298</span></div>
+                                        <div class="flex justify-between"><span>Neural Streak:</span> <span class="text-cyber-yellow font-bold">94 Days</span></div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between text-xs code-font text-gray-400 pt-3 border-t border-gray-800">
+                                    <span>[CLICK TO FLIP GUI]</span>
+                                    <i class="fa-solid fa-arrow-rotate-right text-cyber-pink"></i>
+                                </div>
+                            </div>
+                            <!-- BACK -->
+                            <div class="backface-hidden absolute inset-0 rotate-y-180 cyber-border rounded-xl p-6 flex flex-col justify-between bg-cyber-900 border-cyber-pink">
+                                <div>
+                                    <div class="flex justify-between items-center mb-3">
+                                        <span class="text-xs code-font text-cyber-pink font-bold">&gt; KERNEL_CONFIG &amp; SKILLS</span>
+                                        <i class="fa-solid fa-wand-magic-sparkles text-cyber-pink"></i>
+                                    </div>
+                                    <div class="space-y-2 text-xs code-font text-gray-300">
+                                        <p class="text-[11px] text-gray-400">Crafting fluid motion graphic transitions, particle physics, and immersive holographic HUD layouts.</p>
+                                        <div class="flex flex-wrap gap-1.5 pt-2">
+                                            <span class="px-2 py-0.5 bg-cyber-800 text-cyber-cyan rounded text-[10px] border border-gray-700">Tailwind</span>
+                                            <span class="px-2 py-0.5 bg-cyber-800 text-cyber-green rounded text-[10px] border border-gray-700">Framer Motion</span>
+                                            <span class="px-2 py-0.5 bg-cyber-800 text-cyber-pink rounded text-[10px] border border-gray-700">SVG Shaders</span>
+                                            <span class="px-2 py-0.5 bg-cyber-800 text-cyber-yellow rounded text-[10px] border border-gray-700">GLSL</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-black/60 p-3 rounded border border-gray-800 text-[11px] code-font text-cyber-pink">
+                                    status: "Rendering 120fps physics pipelines."
+                                </div>
+                                <div class="flex items-center justify-between text-xs code-font text-gray-400 pt-2 border-t border-gray-800">
+                                    <span>[FLIP TO FRONT]</span>
+                                    <i class="fa-solid fa-arrow-rotate-left text-cyber-pink"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== STREAMING_CHUNK:Building View 3: Applied Motion Sensing & ML Lab ==================== -->
+            <section id="view-ml" class="hidden flex-1 flex flex-col space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold code-font text-cyber-cyan flex items-center gap-2">
+                            <i class="fa-solid fa-brain"></i> APPLIED MOTION SENSING &amp; NEURAL LEARNING LAB
+                        </h2>
+                        <p class="text-xs text-gray-400">Train a local neural net using mouse motion sensors or simulated telemetry to classify clean vs. buggy code commits in real-time.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="startTrainingSession()" id="train-btn" class="px-4 py-2 rounded bg-cyber-green text-black font-bold text-xs code-font hover:bg-cyber-green/90 transition-all shadow-lg shadow-cyber-green/20">
+                            <i class="fa-solid fa-play mr-1"></i> Start Training Epochs
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Sensor Input Pad -->
+                    <div class="cyber-border p-5 rounded-xl flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-sm font-bold code-font text-cyber-cyan">MOTION SENSOR STREAM</h3>
+                                <span id="sensor-status" class="text-[10px] px-2 py-0.5 rounded bg-cyber-yellow/10 text-cyber-yellow border border-cyber-yellow/35">STANDBY</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mb-4">Move your cursor rapidly across the sensor pad below to generate live spatial velocity and acceleration data vectors for the neural network.</p>
+
+                            <!-- Interactive Sensor Pad -->
+                            <div id="sensor-pad" onmousemove="handleSensorMove(event)" class="w-full h-48 bg-cyber-900 border border-cyber-cyan/30 rounded-lg relative overflow-hidden flex items-center justify-center cursor-crosshair group">
+                                <div class="absolute inset-0 bg-[radial-gradient(#00f0ff_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
+                                <div id="sensor-crosshair" class="w-4 h-4 rounded-full border-2 border-cyber-cyan absolute pointer-events-none transform -translate-x-1/2 -translate-y-1/2 transition-all duration-75"></div>
+                                <div class="absolute bottom-2 left-2 text-[10px] code-font text-gray-500">X: <span id="val-x">0</span> | Y: <span id="val-y">0</span></div>
+                                <div class="absolute bottom-2 right-2 text-[10px] code-font text-cyber-cyan group-hover:opacity-100 opacity-60">DRAG/MOVE HERE</div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 text-xs code-font bg-cyber-900 p-3 rounded-lg border border-gray-800">
+                            <div class="flex justify-between"><span>Velocity Vector:</span> <span id="stat-vel" class="text-cyber-green">0.0 px/s</span></div>
+                            <div class="flex justify-between"><span>Acceleration:</span> <span id="stat-acc" class="text-cyber-cyan">0.0 G</span></div>
+                            <div class="flex justify-between"><span>Confidence Score:</span> <span id="stat-conf" class="text-cyber-yellow">--</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Neural Training Progress -->
+                    <div class="cyber-border p-5 rounded-xl flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-sm font-bold code-font text-cyber-green">MODEL CONVERGENCE</h3>
+                                <span class="text-[10px] code-font text-gray-400">Epoch <span id="epoch-count">0</span>/50</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mb-4">Real-time loss and accuracy curves computed from motion sensor telemetry fed into the edge classifier.</p>
+
+                            <!-- Progress Bars / Metrics -->
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between text-xs code-font mb-1">
+                                        <span class="text-gray-300">Loss Function (Binary Crossentropy)</span>
+                                        <span id="loss-val" class="text-cyber-pink font-bold">0.842</span>
+                                    </div>
+                                    <div class="w-full bg-cyber-900 h-2 rounded-full overflow-hidden border border-gray-800">
+                                        <div id="loss-bar" class="bg-cyber-pink h-full w-[84%] transition-all duration-300"></div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between text-xs code-font mb-1">
+                                        <span class="text-gray-300">Classification Accuracy</span>
+                                        <span id="acc-val" class="text-cyber-green font-bold">42.0%</span>
+                                    </div>
+                                    <div class="w-full bg-cyber-900 h-2 rounded-full overflow-hidden border border-gray-800">
+                                        <div id="acc-bar" class="bg-cyber-green h-full w-[42%] transition-all duration-300"></div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-cyber-900 p-3 rounded-lg border border-gray-800 text-xs code-font space-y-1">
+                                    <span class="text-cyber-cyan font-block block font-bold">// INFERENCE CLASSIFIER</span>
+                                    <p id="ml-prediction" class="text-gray-300 text-[11px]">Awaiting active sensor telemetry to classify git commit state...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="resetTraining()" class="w-full py-2 rounded bg-cyber-700 hover:bg-cyber-600 text-xs code-font text-white border border-gray-600 transition-all">
+                            Reset Model Weights
+                        </button>
+                    </div>
+
+                    <!-- AI Generated Code Patch & Feedback -->
+                    <div class="cyber-border p-5 rounded-xl flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-sm font-bold code-font text-cyber-yellow">AUTONOMOUS PATCH BOT</h3>
+            <!-- ==================== STREAMING_CHUNK:Building Extended 2600px Scroll Depth Modules ==================== -->
+            <section id="view-extended-scroll" class="cyber-border p-6 rounded-2xl space-y-6 bg-gradient-to-b from-cyber-900 to-cyber-800">
+                <div class="flex items-center justify-between border-b border-gray-800 pb-4">
+                    <div>
+                        <h2 class="text-base font-bold code-font text-cyber-green flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group"></i> 2600px+ DEEP SCROLL ARCHITECTURE &amp; TIMELINE MODULES
+                        </h2>
+                        <p class="text-xs text-gray-400">Scroll downwards across 2600px of immersive vertical workspace to explore multi-layered Git telemetry, spatial physics logs, and live commit diagnostics.</p>
+                    </div>
+                    <span class="text-xs code-font text-cyber-cyan bg-cyber-cyan/10 px-3 py-1 rounded-full border border-cyber-cyan/30" id="scroll-pixels-indicator">Scroll Depth: 0 px</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-cyber-900/90 p-4 rounded-xl border border-gray-800 code-font space-y-2">
+                        <div class="text-cyber-cyan text-xs font-bold">// MODULE_01: SHADER PIPELINE</div>
+                        <p class="text-[11px] text-gray-400">WebGL shaders compiled successfully with 120Hz refresh synchronization across all active developer nodes.</p>
+                        <div class="text-cyber-green text-[10px]">Status: Optimal (0 dropped frames)</div>
+                    </div>
+                    <div class="bg-cyber-900/90 p-4 rounded-xl border border-gray-800 code-font space-y-2">
+                        <div class="text-cyber-pink text-xs font-bold">// MODULE_02: SENSOR TELEMETRY</div>
+                        <p class="text-[11px] text-gray-400">Inertial measurement unit (IMU) streaming real-time acceleration vectors directly into the neural training feed.</p>
+                        <div class="text-cyber-yellow text-[10px]">Buffer: Synchronized</div>
+                    </div>
+                    <div class="bg-cyber-900/90 p-4 rounded-xl border border-gray-800 code-font space-y-2">
+                        <div class="text-cyber-yellow text-xs font-bold">// MODULE_03: GITHUB AR ANCHORS</div>
+                        <p class="text-[11px] text-gray-400">Stick-out pins mapped to live repository pull requests and contributor activity indices in 3D space.</p>
+                        <div class="text-cyber-cyan text-[10px]">Nodes: 70 Active</div>
+                    </div>
+                </div>
+
+                <!-- Additional 2600px Immersive Deep Scroll Modules -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <div class="bg-cyber-900/90 p-5 rounded-xl border border-cyber-cyan/40 code-font space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-cyber-cyan text-xs font-bold">// MODULE_04: NEURAL AST &amp; HOLOGRAPHIC GIT TREES</span>
+                            <span class="text-[10px] bg-cyber-cyan/10 text-cyber-cyan px-2 py-0.5 rounded border border-cyber-cyan/30">2600px ZONE</span>
+                        </div>
+                        <p class="text-[11px] text-gray-400">Deep-tier AST node traversal verifying merge conflict probabilities and branch vector alignments across distributed repositories.</p>
+                        <div class="bg-black/60 p-3 rounded border border-gray-800 text-[10px] text-cyber-green font-mono">
+                            git branch --holographic --vector=0.98 --sync=120hz
+                        </div>
+                    </div>
+
+                    <div class="bg-cyber-900/90 p-5 rounded-xl border border-cyber-pink/40 code-font space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-cyber-pink text-xs font-bold">// MODULE_05: MOTION GLITCH SHADER BENCH</span>
+                            <span class="text-[10px] bg-cyber-pink/10 text-cyber-pink px-2 py-0.5 rounded border border-cyber-pink/30">ACTIVE</span>
+                        </div>
+                        <p class="text-[11px] text-gray-400">Real-time shader aberration workbench testing developer flip card micro-interactions and GPU memory footprints.</p>
+                        <div class="bg-black/60 p-3 rounded border border-gray-800 text-[10px] text-cyber-pink font-mono">
+                            shader.compile({aberration: true, intensity: 0.85});
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-cyber-900 rounded-xl border border-gray-800 text-xs code-font text-gray-300 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div>
+                        <span class="text-cyber-cyan font-bold block mb-1">Max 2600px Immersion Reached</span>
+                        <p class="text-gray-400 text-[11px]">Explore device simulator, train neural sensing models, or interact with 3D stick-out AR pins above.</p>
+                    </div>
+                    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="px-4 py-2 bg-cyber-700 hover:bg-cyber-600 text-white rounded text-xs code-font font-semibold transition-all">
+                        <i class="fa-solid fa-arrow-up mr-1.5"></i> Scroll Back to Top (2600px)
+                    </button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ==================== STREAMING_CHUNK:Building Sticky 200px Bottom Scroll & Terminal Drawer ==================== -->
+    <footer class="fixed bottom-0 left-0 right-0 z-40 bg-cyber-900/95 border-t border-cyber-cyan/40 backdrop-blur-xl h-52 flex flex-col shadow-2xl">
+        <!-- Drawer Top Control Header -->
+        <div class="flex items-center justify-between px-4 py-2 border-b border-gray-800 bg-cyber-800/80 text-xs code-font">
+            <div class="flex items-center space-x-3">
+                <span class="flex h-2 w-2 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyber-cyan opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-cyber-cyan"></span>
+                </span>
+                <span class="text-cyber-cyan font-bold tracking-wider">// 200PX BOTTOM SCROLL: LIVE TELEMETRY &amp; GIT COMMAND LOG</span>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span class="text-gray-400 hidden sm:inline">Stream Buffer: <span class="text-cyber-green font-bold">ACTIVE</span></span>
+                <button onclick="clearTerminalLogs()" class="px-2 py-1 bg-cyber-700/50 hover:bg-cyber-700 text-gray-300 rounded text-[11px] transition-all">
+                    <i class="fa-solid fa-trash-can mr-1"></i> Clear Log
+                </button>
+                <button onclick="toggleBottomDrawer()" id="drawer-toggle-btn" class="px-2 py-1 bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/40 hover:bg-cyber-cyan/30 rounded text-[11px] transition-all">
+                    <i class="fa-solid fa-chevron-down mr-1" id="drawer-icon"></i> Minimize (200px)
+                </button>
+            </div>
+        </div>
+
+        <!-- Scrollable 200px Terminal Content Area -->
+        <div id="terminal-scroll-area" class="flex-1 p-4 overflow-y-auto code-font text-xs space-y-2 text-gray-300">
+            <div class="flex items-start space-x-2">
+                <span class="text-cyber-cyan">[16:05:02]</span>
+                <span class="text-cyber-green font-semibold">SUCCESS:</span>
+                <span>Three.js WebGL context initialized with 70 AR repository constellation nodes & stick-out pins.</span>
+            </div>
+            <div class="flex items-start space-x-2">
+                <span class="text-cyber-cyan">[16:05:15]</span>
+                <span class="text-cyber-yellow font-semibold">INFO:</span>
+                <span>Motion sensing neural pad active. Tracking mouse acceleration and delta vectors.</span>
+            </div>
+            <div class="flex items-start space-x-2">
+                <span class="text-cyber-cyan">[16:05:28]</span>
+                <span class="text-cyber-pink font-semibold">GLITCH:</span>
+                <span>Motion graphic shader pipeline synchronized with GitHub developer flip card DOM.</span>
+            </div>
+            <div class="flex items-start space-x-2">
+                <span class="text-cyber-cyan">[16:05:40]</span>
+                <span class="text-cyber-cyan font-semibold">SYSTEM:</span>
+                <span>2000px scroll immersion enabled. Ready for user interaction and deep telemetry inspection.</span>
+            </div>
+        </div>
+
+        <!-- Bottom Quick Command Bar Inside 200px Drawer -->
+        <div class="px-4 py-2 bg-cyber-900 border-t border-gray-800 flex items-center justify-between text-xs code-font">
+            <div class="flex items-center space-x-2 w-full max-w-xl">
+                <span class="text-cyber-cyan">&gt;</span>
+                <input type="text" id="terminal-cmd-input" placeholder="Enter command (e.g., 'git status', 'train', 'pins')..." onkeydown="handleTerminalCommand(event)" class="w-full bg-cyber-800 border border-gray-700 rounded px-3 py-1 text-xs code-font text-white focus:outline-none focus:border-cyber-cyan">
+            </div>
+            <div class="hidden md:flex items-center space-x-4 text-[11px] text-gray-400">
+                <span>Latency: <span class="text-cyber-green">4ms</span></span>
+                <span>Memory: <span class="text-cyber-cyan">42.8 MB</span></span>
+                <span>© 2026 GitCyber AR Studio</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Scroll Progress & 2000px Depth Tracker
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+            const progressBar = document.getElementById('scroll-progress-bar');
+            if (progressBar) progressBar.style.width = `${scrollPercent}%`;
+
+            const pixelIndicator = document.getElementById('scroll-pixels-indicator');
+            if (pixelIndicator) pixelIndicator.innerText = `Scroll Depth: ${Math.round(scrollTop)} px`;
+        });
+
+        // Device Simulator Toggle Logic
+        let isDeviceSimActive = false;
+        function toggleDeviceSimulator() {
+            const wrapper = document.getElementById('device-frame-wrapper');
+            const btnText = document.getElementById('sim-btn-text');
+            isDeviceSimActive = !isDeviceSimActive;
+
+            if (isDeviceSimActive) {
+                wrapper.className = "w-full max-w-md mx-auto my-6 border-[8px] border-gray-800 rounded-[40px] shadow-2xl overflow-hidden bg-cyber-900 flex flex-col transition-all duration-500 ring-4 ring-cyber-cyan/30";
+                btnText.innerText = "Widescreen View";
+                logTerminalMessage("Device frame simulator mode activated. Full device view scroll enabled.", "success");
+            } else {
+                wrapper.className = "w-full flex-1 flex flex-col transition-all duration-500";
+                btnText.innerText = "Device Frame View";
+                logTerminalMessage("Widescreen expanded view restored.", "info");
+            }
+        }
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            ['ar', 'cards', 'ml'].forEach(t => {
+                const el = document.getElementById(`view-${t}`);
+                if (el) el.classList.add('hidden');
+                const tabEl = document.getElementById(`tab-${t}`);
+                if (tabEl) tabEl.className = "px-4 py-1.5 rounded text-xs font-semibold code-font transition-all text-gray-400 hover:text-white";
+                const mobEl = document.getElementById(`mob-tab-${t}`);
+                if (mobEl) mobEl.className = "py-1 px-3 rounded text-gray-400";
+            });
+            const targetView = document.getElementById(`view-${tabId}`);
+            if (targetView) targetView.classList.remove('hidden');
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            if (targetTab) targetTab.className = "px-4 py-1.5 rounded text-xs font-semibold code-font transition-all bg-cyber-cyan text-black shadow-lg shadow-cyber-cyan/20";
+            const targetMob = document.getElementById(`mob-tab-${tabId}`);
+            if (targetMob) targetMob.className = "py-1 px-3 rounded bg-cyber-cyan text-black font-bold";
+
+            logTerminalMessage(`Switched active workspace view to: [${tabId.toUpperCase()}]`, 'info');
+
+            if(tabId === 'ar' && arRenderer) {
+                setTimeout(() => {
+                    onWindowResize();
+                }, 50);
+            }
+        }
+
+        // Global Glitch Effect Trigger
+        function triggerGlobalGlitch() {
+            document.body.classList.add('animate-pulse');
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 bg-cyber-pink/20 z-50 pointer-events-none transition-opacity duration-300';
+            document.body.appendChild(overlay);
+            setTimeout(() => {
+                overlay.remove();
+                document.body.classList.remove('animate-pulse');
+            }, 250);
+            logTerminalMessage('Global glitch pulse injected across UI elements & WebGL shaders.', 'glitch');
+        }
+
+        // 3D Flip Card Interactive Functions
+        function toggleCardFlip(cardElement) {
+            const inner = cardElement.querySelector('.transform-style-3d');
+            if (!inner) return;
+            if (inner.style.transform === 'rotateY(180deg)') {
+                inner.style.transform = 'rotateY(0deg)';
+                logTerminalMessage('Developer card flipped back to FRONT view.', 'info');
+            } else {
+                inner.style.transform = 'rotateY(180deg)';
+                logTerminalMessage('Developer card flipped to BACK telemetry configuration view.', 'info');
+            }
+        }
+
+        function flipAllCards() {
+            document.querySelectorAll('.transform-style-3d').forEach(inner => {
+                if (inner.style.transform === 'rotateY(180deg)') {
+                    inner.style.transform = 'rotateY(0deg)';
+                } else {
+                    inner.style.transform = 'rotateY(180deg)';
+                }
+            });
+            logTerminalMessage('Executed batch flip action across all developer GUI cards.', 'info');
+        }
+
+        function randomizeCardGlitches() {
+            triggerGlobalGlitch();
+            document.querySelectorAll('.cyber-border').forEach(card => {
+                card.style.borderColor = Math.random() > 0.5 ? '#00ff66' : '#ff007f';
+                setTimeout(() => {
+                    card.style.borderColor = 'rgba(0, 240, 255, 0.3)';
+                }, 1000);
+            });
+            logTerminalMessage('Applied randomized motion color aberration wave across cards.', 'glitch');
+        }
+
+        // Terminal Log Helper
+        function logTerminalMessage(msg, type = 'info') {
+            const area = document.getElementById('terminal-scroll-area');
+            if (!area) return;
+            const time = new Date().toTimeString().split(' ')[0];
+            const div = document.createElement('div');
+            div.className = 'flex items-start space-x-2';
+            
+            let badgeColor = 'text-cyber-green';
+            let badgeText = 'SUCCESS:';
+            if (type === 'warn') { badgeColor = 'text-cyber-yellow'; badgeText = 'WARNING:'; }
+            else if (type === 'glitch') { badgeColor = 'text-cyber-pink'; badgeText = 'GLITCH:'; }
+            else if (type === 'info') { badgeColor = 'text-cyber-cyan'; badgeText = 'INFO:'; }
+
+            div.innerHTML = `<span class="text-cyber-cyan">[${time}]</span><span class="${badgeColor} font-semibold">${badgeText}</span><span>${msg}</span>`;
+            area.appendChild(div);
+            area.scrollTop = area.scrollHeight;
+        }
+
+        function clearTerminalLogs() {
+            const area = document.getElementById('terminal-scroll-area');
+            if (area) {
+                area.innerHTML = '<div class="flex items-start space-x-2"><span class="text-cyber-cyan">[SYSTEM]</span><span class="text-cyber-green font-semibold">READY:</span><span>Terminal event log cleared.</span></div>';
+            }
+        }
+
+        let drawerMinimized = false;
+        function toggleBottomDrawer() {
+            const footer = document.querySelector('footer');
+            const icon = document.getElementById('drawer-icon');
+            const btn = document.getElementById('drawer-toggle-btn');
+            drawerMinimized = !drawerMinimized;
+            if (drawerMinimized) {
+                footer.style.height = '42px';
+                document.getElementById('terminal-scroll-area').style.display = 'none';
+                icon.className = 'fa-solid fa-chevron-up mr-1';
+                btn.innerHTML = '<i class="fa-solid fa-chevron-up mr-1"></i> Expand (200px)';
+                logTerminalMessage('Bottom scroll terminal drawer minimized.', 'info');
+            } else {
+                footer.style.height = '13rem'; // ~200px
+                document.getElementById('terminal-scroll-area').style.display = 'block';
+                icon.className = 'fa-solid fa-chevron-down mr-1';
+                btn.innerHTML = '<i class="fa-solid fa-chevron-down mr-1"></i> Minimize (200px)';
+                logTerminalMessage('Bottom scroll terminal drawer expanded to 200px viewport.', 'info');
+            }
+        }
+
+        function handleTerminalCommand(e) {
+            if (e.key === 'Enter') {
+                const val = e.target.value.trim();
+                if (!val) return;
+                logTerminalMessage(`> ${val}`, 'info');
+                
+                const cmd = val.toLowerCase();
+                if (cmd === 'glitch') {
+                    triggerGlobalGlitch();
+                } else if (cmd === 'train') {
+                    startTrainingSession();
+                } else if (cmd === 'pins') {
+                    toggleStickOutPins();
+                } else if (cmd === 'clear') {
+                    clearTerminalLogs();
+                } else {
+                    logTerminalMessage(`Command executed successfully: "${val}"`, 'success');
+                }
+                e.target.value = '';
+            }
+        }
+
+        // ==================== THREE.JS AR REPO CONSTELLATION & STICK OUT PINS ==================== -->
+        let scene, camera, arRenderer, repoParticles, particleCount = 70;
+        let isRotating = true;
+        let raycaster, mouse;
+        let stickOutPinsGroup;
+        let showStickOutPins = true;
+
+        function initARSpace() {
+            const container = document.getElementById('ar-canvas-container');
+            if (!container) return;
+
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x030712, 0.035);
+
+            camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 5, 25);
+
+            arRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            arRenderer.setSize(container.clientWidth, container.clientHeight);
+            arRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(arRenderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0x00f0ff, 2, 50);
+            pointLight.position.set(0, 10, 10);
+            scene.add(pointLight);
+
+            const gridHelper = new THREE.GridHelper(50, 50, 0x00f0ff, 0x111827);
+            gridHelper.position.y = -6;
+            scene.add(gridHelper);
+
+            stickOutPinsGroup = new THREE.Group();
+            scene.add(stickOutPinsGroup);
+
+            buildConstellationNodes(particleCount);
+            buildStickOutPins();
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            container.addEventListener('click', onCanvasClick);
+            window.addEventListener('resize', onWindowResize);
+            animateAR();
+            logTerminalMessage('Three.js AR Space successfully loaded with stick-out anchor pins & raycasting.', 'success');
+        }
+
+        function buildConstellationNodes(count) {
+            if (repoParticles) scene.remove(repoParticles);
+
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+
+            const colorCyan = new THREE.Color(0x00f0ff);
+            const colorGreen = new THREE.Color(0x00ff66);
+            const colorPink = new THREE.Color(0xff007f);
+
+            for (let i = 0; i < count * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 30;
+                positions[i + 1] = (Math.random() - 0.5) * 15;
+                positions[i + 2] = (Math.random() - 0.5) * 30;
+
+                const rand = Math.random();
+                let col = rand > 0.6 ? colorCyan : (rand > 0.3 ? colorGreen : colorPink);
+                colors[i] = col.r;
+                colors[i + 1] = col.g;
+                colors[i + 2] = col.b;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.8,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.85
+            });
+
+            repoParticles = new THREE.Points(geometry, material);
+            scene.add(repoParticles);
+        }
+
+        function buildStickOutPins() {
+            while(stickOutPinsGroup.children.length > 0){ 
+                stickOutPinsGroup.remove(stickOutPinsGroup.children[0]); 
+            }
+
+            const pinPositions = [
+                {x: -6, y: 3, z: -4, label: "PR #1024"},
+                {x: 7, y: 1, z: 5, label: "Security Patch"},
+                {x: -3, y: -2, z: 6, label: "WebGL Shader"},
+                {x: 5, y: 4, z: -5, label: "CI/CD Pipeline"},
+                {x: 0, y: -4, z: -2, label: "Main Branch"}
+            ];
+
+            pinPositions.forEach((pos, idx) => {
+                const lineGeo = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(pos.x, pos.y - 2, pos.z),
+                    new THREE.Vector3(pos.x, pos.y + 2, pos.z)
+                ]);
+                const lineMat = new THREE.LineBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.7 });
+                const line = new THREE.Line(lineGeo, lineMat);
+                stickOutPinsGroup.add(line);
+
+                const sphereGeo = new THREE.SphereGeometry(0.4, 16, 16);
+                const sphereMat = new THREE.MeshBasicMaterial({ color: idx % 2 === 0 ? 0xff007f : 0x00ff66 });
+                const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+                sphere.position.set(pos.x, pos.y + 2, pos.z);
+                sphere.userData = { id: idx, label: pos.label };
+                stickOutPinsGroup.add(sphere);
+            });
+        }
+
+        function toggleStickOutPins() {
+            showStickOutPins = !showStickOutPins;
+            stickOutPinsGroup.visible = showStickOutPins;
+            const btn = document.getElementById('stickout-pins-btn');
+            if(showStickOutPins) {
+                btn.className = "w-full py-2 px-3 rounded bg-cyber-cyan/20 border border-cyber-cyan text-cyber-cyan text-xs font-semibold code-font hover:bg-cyber-cyan/30 transition-all flex items-center justify-center gap-1.5";
+                logTerminalMessage("Stick-out AR anchor pins enabled.", "success");
+            } else {
+                btn.className = "w-full py-2 px-3 rounded bg-cyber-800 border border-gray-700 text-gray-400 text-xs font-semibold code-font transition-all flex items-center justify-center gap-1.5";
+                logTerminalMessage("Stick-out AR anchor pins hidden.", "info");
+            }
+        }
+
+        function updateDensity(val) {
+            particleCount = parseInt(val);
+            document.getElementById('telemetry-nodes').innerText = particleCount;
+            buildConstellationNodes(particleCount);
+            logTerminalMessage(`AR Constellation density updated to ${particleCount} nodes.`, 'info');
+        }
+
+        function updateARConstellation() {
+            const repo = document.getElementById('ar-repo-select').value;
+            triggerGlobalGlitch();
+            document.getElementById('ar-node-info').innerText = `Synced constellation to target repository: ${repo}. Rebuilding 3D neural AST graph...`;
+            buildConstellationNodes(particleCount);
+            buildStickOutPins();
+            logTerminalMessage(`Target repository re-indexed: ${repo}`, 'success');
+        }
+
+        function toggleARotation() {
+            isRotating = !isRotating;
+            logTerminalMessage(`AR Space auto-rotation toggled: ${isRotating}`, 'info');
+        }
+
+        function resetARCamera() {
+            camera.position.set(0, 5, 25);
+            camera.lookAt(0, 0, 0);
+            logTerminalMessage('AR Camera viewpoint recentered to origin coordinates.', 'info');
+        }
+
+        function onCanvasClick(event) {
+            const container = document.getElementById('ar-canvas-container');
+            if (!container) return;
+            const rect = container.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(stickOutPinsGroup.children);
+
+            if (intersects.length > 0) {
+                const obj = intersects[0].object;
+                if(obj.userData && obj.userData.label) {
+                    document.getElementById('ar-node-info').innerHTML = `<span class="text-cyber-pink font-bold">Stick-Out Pin Activated</span>: <span class="text-cyber-cyan">${obj.userData.label}</span> verified in 3D anchor space.`;
+                    logTerminalMessage(`Clicked stick-out AR anchor pin: [${obj.userData.label}]`, 'success');
+                }
+            } else {
+                const particleIntersects = raycaster.intersectObject(repoParticles);
+                if (particleIntersects.length > 0) {
+                    const index = particleIntersects[0].index;
+                    document.getElementById('ar-node-info').innerHTML = `<span class="text-cyber-green font-bold">Node #${index} Selected</span>: Commit hash <span class="text-cyber-cyan">#a9f8${index}</span> verified. Pull request velocity normal.`;
+                    logTerminalMessage(`Raycast selected AR Node #${index} [Commit Hash #a9f8${index}]`, 'success');
+                }
+            }
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('ar-canvas-container');
+            if (!container || !camera || !arRenderer) return;
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            arRenderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        function animateAR() {
+            requestAnimationFrame(animateAR);
+            if (repoParticles && isRotating) {
+                repoParticles.rotation.y += 0.002;
+            }
+            if (stickOutPinsGroup && isRotating) {
+                stickOutPinsGroup.rotation.y += 0.002;
+            }
+            if (arRenderer && scene && camera) {
+                arRenderer.render(scene, camera);
+            }
+        }
+
+        window.onload = function() {
+            initARSpace();
+        };
+
+        // ==================== APPLIED MOTION SENSING & ML SIMULATOR ==================== -->
+        let isTraining = false;
+        let currentEpoch = 0;
+        let lastX = 0, lastY = 0, lastTime = Date.now();
+
+        function handleSensorMove(event) {
+            const pad = document.getElementById('sensor-pad');
+            const rect = pad.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            document.getElementById('val-x').innerText = Math.round(x);
+            document.getElementById('val-y').innerText = Math.round(y);
+
+            const crosshair = document.getElementById('sensor-crosshair');
+            crosshair.style.left = `${x}px`;
+            crosshair.style.top = `${y}px`;
+
+            const now = Date.now();
+            const dt = (now - lastTime) / 1000 || 0.01;
+            const dx = x - lastX;
+            const dy = y - lastY;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            const velocity = dist / dt;
+
+            document.getElementById('stat-vel').innerText = `${velocity.toFixed(1)} px/s`;
+            document.getElementById('stat-acc').innerText = `${(velocity / 100).toFixed(2)} G`;
+
+            lastX = x;
+            lastY = y;
+            lastTime = now;
+
+            if (isTraining) {
+                const conf = Math.min(99.8, 40 + (velocity / 15));
+                document.getElementById('stat-conf').innerText = `${conf.toFixed(1)}%`;
+                document.getElementById('ml-prediction').innerText = velocity > 120 ? "Motion Pattern: CLEAN_COMMIT (High Velocity)" : "Motion Pattern: REFACTORING (Stable Vector)";
+            }
+        }
+
+        function startTrainingSession() {
+            if (isTraining) return;
+            isTraining = true;
+            currentEpoch = 0;
+            document.getElementById('sensor-status').innerText = "TRAINING...";
+            document.getElementById('sensor-status').className = "text-[10px] px-2 py-0.5 rounded bg-cyber-green/10 text-cyber-green border border-cyber-green/35 animate-pulse";
+            document.getElementById('train-btn').innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-1"></i> Training Epochs...';
+            logTerminalMessage('Initiated neural network training session over motion sensor vectors.', 'info');
+
+            const interval = setInterval(() => {
+                currentEpoch++;
+                document.getElementById('epoch-count').innerText = currentEpoch;
+
+                const loss = Math.max(0.02, 0.84 - (currentEpoch * 0.016));
+                const acc = Math.min(99.4, 42 + (currentEpoch * 1.15));
+
+                document.getElementById('loss-val').innerText = loss.toFixed(3);
+                document.getElementById('loss-bar').style.width = `${loss * 100}%`;
+
+                document.getElementById('acc-val').innerText = `${acc.toFixed(1)}%`;
+                document.getElementById('acc-bar').style.width = `${acc}%`;
+
+                if (currentEpoch >= 50) {
+                    clearInterval(interval);
+                    isTraining = false;
+                    document.getElementById('sensor-status').innerText = "MODEL TRAINED";
+                    document.getElementById('sensor-status').className = "text-[10px] px-2 py-0.5 rounded bg-cyber-cyan/10 text-cyber-cyan border border-cyber-cyan/35";
+                    document.getElementById('train-btn').innerHTML = '<i class="fa-solid fa-check mr-1"></i> Training Complete';
+                    logTerminalMessage('Neural model successfully converged with 99.4% classification accuracy.', 'success');
+                }
+            }, 100);
+        }
+
+        function resetTraining() {
+            isTraining = false;
+            currentEpoch = 0;
+            document.getElementById('epoch-count').innerText = '0';
+            document.getElementById('loss-val').innerText = '0.842';
+            document.getElementById('loss-bar').style.width = '84%';
+            document.getElementById('acc-val').innerText = '42.0%';
+            document.getElementById('acc-bar').style.width = '42%';
+            document.getElementById('sensor-status').innerText = "STANDBY";
+            document.getElementById('sensor-status').className = "text-[10px] px-2 py-0.5 rounded bg-cyber-yellow/10 text-cyber-yellow border border-cyber-yellow/35";
+            document.getElementById('train-btn').innerHTML = '<i class="fa-solid fa-play mr-1"></i> Start Training Epochs';
+            document.getElementById('ml-prediction').innerText = "Awaiting active sensor telemetry to classify git commit state...";
+            logTerminalMessage('Neural classifier weights reset to initial baseline state.', 'warn');
+        }
+
+        function runAutoFix() {
+            triggerGlobalGlitch();
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-1"></i> Deploying Patch...';
+            logTerminalMessage('Deploying autonomous Gemini 3.1 motion smoothing git patch...', 'info');
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Patch Deployed Successfully!';
+                btn.className = "w-full py-2 rounded bg-cyber-green text-black font-bold text-xs code-font transition-all shadow-lg shadow-cyber-green/20";
+                logTerminalMessage('Autonomous patch successfully merged to main branch with zero regressions.', 'success');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.className = "w-full py-2 rounded bg-cyber-cyan text-black font-bold text-xs code-font hover:bg-cyber-cyan/90 transition-all shadow-lg shadow-cyber-cyan/20";
+                }, 2000);
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
